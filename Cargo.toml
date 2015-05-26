@@ -1,0 +1,4 @@
+[package]
+name = "silinapse"
+version = "0.1.0"
+authors = ["Victor Berger <victor.berger@m4x.org>"]
