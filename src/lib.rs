@@ -4,6 +4,7 @@ extern crate num;
 
 use num::Float;
 
+pub mod feedforward;
 pub mod util;
 
 /// A trait representing anything that can process an input to generate an output.
