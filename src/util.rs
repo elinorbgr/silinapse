@@ -65,3 +65,24 @@ impl<F, M, N> Compute<F> for Parallel<F, M, N>
         v
     }
 }
+
+/*
+ * Fixed output
+ */
+
+/// A network that returns a fixed output, whatever the input is.
+pub struct FixedOutput<F: Float> {
+    output: Vec<F>
+}
+
+impl<F: Float> FixedOutput<F> {
+    pub fn new(output: &[F]) -> FixedOutput<F> {
+        FixedOutput { output: output.to_owned() }
+    }
+}
+
+impl<F: Float> Compute<F> for FixedOutput<F> {
+    fn compute(&self, _input: &[F]) -> Vec<F> {
+        self.output.clone()
+    }
+}
