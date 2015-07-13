@@ -8,7 +8,9 @@ extern crate num;
 
 use num::Float;
 
+pub mod activations;
 pub mod feedforward;
+pub mod training;
 pub mod util;
 
 /// A trait representing anything that can process an input to generate an output.

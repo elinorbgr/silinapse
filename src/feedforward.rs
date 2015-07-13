@@ -4,7 +4,8 @@ use std::cmp::min;
 
 use num::{Float, one, zero};
 
-use Compute;
+use {Compute, SupervisedTrain};
+use training::PerceptronRule;
 
 /// A feedforward layer
 pub struct FeedforwardLayer<F: Float, A: Fn(F) -> F> {
@@ -43,11 +44,10 @@ impl<F: Float, A: Fn(F) -> F> FeedforwardLayer<F, A> {
 
 impl<F: Float, A: Fn(F) -> F> Compute<F> for FeedforwardLayer<F, A> {
     fn compute(&self, input: &[F]) -> Vec<F> {
-        let n = self.biases.len();
         let mut out = self.biases.clone();
-        for i in 0..min(self.inputs, input.len()) {
-            for j in 0..n {
-                out[j] = out[j] + self.coeffs[i*n + j] * input[i]
+        for j in 0..self.biases.len() {
+            for i in 0..min(self.inputs, input.len()) {
+                out[j] = out[j] + self.coeffs[j*self.inputs + i] * input[i]
             }
         }
         
@@ -67,12 +67,24 @@ impl<F: Float, A: Fn(F) -> F> Compute<F> for FeedforwardLayer<F, A> {
     }
 }
 
+impl<F: Float, A: Fn(F) -> F> SupervisedTrain<F, PerceptronRule<F>> for FeedforwardLayer<F, A> {
+    fn supervised_train(&mut self, rule: &PerceptronRule<F>, input: &[F], target: &[F]) {
+        let out = self.compute(input);
+        for j in 0..self.biases.len() {
+            let diff = target.get(j).map(|v| *v).unwrap_or(zero()) - out[j];
+            for i in 0..min(self.inputs, input.len()) {
+                self.coeffs[i + j*self.inputs] =
+                    self.coeffs[i + j*self.inputs] + rule.rate * diff * input[i];
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use Compute;
+    use activations::identity;
     use super::FeedforwardLayer;
-
-    fn identity<F>(f: F) -> F { f }
 
     #[test]
     fn compute() {
