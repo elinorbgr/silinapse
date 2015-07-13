@@ -2,13 +2,19 @@
 
 use num::{Float, one, zero};
 
+/// Wraps two functions or closures as an activation function that can be
+/// used by a network.
 pub struct ActivationFunction<F, V, D>
     where F: Float,
           V: Fn(F) -> F,
           D: Fn(F) -> F
 {
     _marker: ::std::marker::PhantomData<F>,
+    /// Mathematical definition of the activation function, to be evaluated
+    /// at any point.
     pub value: V,
+    /// Mathematical derivative of the activation function, to be evaluated
+    /// at any point.
     pub derivative: D
 }
 
@@ -17,11 +23,7 @@ impl<F, V, D> ActivationFunction<F, V, D>
           V: Fn(F) -> F,
           D: Fn(F) -> F
 {
-    /// Wraps the two provided functions or closures as an activation function
-    /// that can be used by a network.
-    ///
-    /// The second function is supposed to be the mathematical derivative of the
-    /// first one, and most of the algorithms rely on that.
+    /// Create an `ActivationFunction` out of two functions or closures.
     pub fn new(value: V, derivative: D) -> ActivationFunction<F, V, D> {
         ActivationFunction {
             _marker: ::std::marker::PhantomData,

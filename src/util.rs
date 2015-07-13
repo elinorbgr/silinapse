@@ -155,6 +155,8 @@ pub struct FixedOutput<F: Float> {
 }
 
 impl<F: Float> FixedOutput<F> {
+    /// Creates a new fixed output network that will always return the
+    /// values provided as `output`.
     pub fn new(output: &[F]) -> FixedOutput<F> {
         FixedOutput { output: output.to_owned() }
     }
