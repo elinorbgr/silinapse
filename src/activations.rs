@@ -17,6 +17,11 @@ impl<F, V, D> ActivationFunction<F, V, D>
           V: Fn(F) -> F,
           D: Fn(F) -> F
 {
+    /// Wraps the two provided functions or closures as an activation function
+    /// that can be used by a network.
+    ///
+    /// The second function is supposed to be the mathematical derivative of the
+    /// first one, and most of the algorithms rely on that.
     pub fn new(value: V, derivative: D) -> ActivationFunction<F, V, D> {
         ActivationFunction {
             _marker: ::std::marker::PhantomData,
@@ -57,3 +62,13 @@ pub fn step<F: Float>() -> ActivationFunction<F, fn(F) -> F, fn(F) -> F> {
 
 fn step_val<F: Float>(x: F) -> F { if x.is_sign_positive() { one() } else { zero() } }
 fn step_der<F: Float>(_x: F) -> F { zero() }
+
+/// Gaussian function. Reaches its maximum `1.0` at `0.0`, and smoothly converges
+/// towards `0.0` on both infinities.
+pub fn gaussian<F: Float>() -> ActivationFunction<F, fn(F) -> F, fn(F) -> F> {
+    ActivationFunction::new(gauss_val, gauss_der)
+}
+
+fn gauss_val<F: Float>(x: F) -> F { (-x.powi(2)).exp() }
+// such a terrible way to make a two: v~~~~~~~~~~~~~~~~~~~v
+fn gauss_der<F: Float>(x: F) -> F { -(one::<F>()+one::<F>())*x*(-x.powi(2)).exp() }
