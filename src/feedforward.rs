@@ -4,9 +4,9 @@ use std::cmp::min;
 
 use num::{Float, one, zero};
 
-use {Compute, SupervisedTrain};
+use {Compute, BackpropTrain, SupervisedTrain};
 use activations::ActivationFunction;
-use training::PerceptronRule;
+use training::{PerceptronRule, GradientDescent};
 
 /// A feedforward layer
 pub struct FeedforwardLayer<F: Float, V: Fn(F) -> F, D: Fn(F) -> F> {
@@ -101,6 +101,62 @@ impl<F, V, D> SupervisedTrain<F, PerceptronRule<F>> for FeedforwardLayer<F, V, D
                     self.coeffs[i + j*self.inputs] + rule.rate * diff * input[i];
             }
         }
+    }
+}
+
+impl<F, V, D> BackpropTrain<F, GradientDescent<F>> for FeedforwardLayer<F, V, D>
+    where F: Float,
+          V: Fn(F) -> F,
+          D: Fn(F) -> F
+{
+    fn backprop_train(&mut self,
+                      rule: &GradientDescent<F>,
+                      input: &[F],
+                      target: &[F])
+        -> Vec<F>
+    {
+        // we need to compute the intermediate states
+        let mut out = self.biases.clone();
+        for j in 0..self.biases.len() {
+            for i in 0..min(self.inputs, input.len()) {
+                out[j] = out[j] + self.coeffs[j*self.inputs + i] * input[i]
+            }
+        }
+
+        let deltas = out.iter()
+                            .map(|x| { (self.activation.derivative)(*x) })
+                            .collect::<Vec<_>>();
+        for o in &mut out {
+            *o = (self.activation.value)(*o);
+        }
+
+        let mut returned = input.to_owned();
+        for j in 0..self.biases.len() {
+            for i in 0..min(self.inputs, input.len()) {
+                returned[i] = returned[i] - self.coeffs[i + j*self.inputs]*deltas[j];
+                self.coeffs[i + j*self.inputs] =
+                    self.coeffs[i + j*self.inputs]
+                    - rule.rate * input.get(i).map(|x| *x).unwrap_or(zero())
+                                * deltas[j]
+                                * ( out[j] - target.get(j).map(|x| *x).unwrap_or(zero()) )
+
+            }
+        }
+        returned
+    }
+}
+
+impl<F, V, D> SupervisedTrain<F, GradientDescent<F>> for FeedforwardLayer<F, V, D>
+    where F: Float,
+          V: Fn(F) -> F,
+          D: Fn(F) -> F
+{
+    fn supervised_train(&mut self,
+                        rule: &GradientDescent<F>,
+                        input: &[F],
+                        target: &[F])
+    {
+        self.backprop_train(rule, input, target);
     }
 }
 

@@ -9,9 +9,11 @@ use Method;
 
 /// The gradient descend approach, consisting on finding a minimum of the
 /// error by going down its gradient.
-pub struct GradientDescent;
+pub struct GradientDescent<F: Float> {
+    pub rate: F
+}
 
-impl Method for GradientDescent {}
+impl<F: Float> Method for GradientDescent<F> {}
 
 /// The perceptron rule, a classic learning rule for one-layered
 /// feedforward networks.

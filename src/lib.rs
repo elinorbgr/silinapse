@@ -3,6 +3,11 @@
 //! Accross the library, if the input slices do not contain enough
 //! values for the unit they are given to, the missing values will
 //! be inferred to be `0.0`. Samewise, superfluous values are ignored.
+//!
+//! The whole library is parametred over a type `F`, which can be any `Float` type
+//! (currently `f32` or `f64`, but maybe others in the future).
+
+#![warn(missing_docs)]
 
 extern crate num;
 
