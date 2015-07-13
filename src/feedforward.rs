@@ -57,6 +57,14 @@ impl<F: Float, A: Fn(F) -> F> Compute<F> for FeedforwardLayer<F, A> {
 
         out
     }
+
+    fn input_size(&self) -> usize {
+        self.inputs
+    }
+
+    fn output_size(&self) -> usize {
+        self.biases.len()
+    }
 }
 
 #[cfg(test)]
