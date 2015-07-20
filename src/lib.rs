@@ -10,13 +10,19 @@
 #![warn(missing_docs)]
 
 extern crate num;
+extern crate rand;
 
 use num::Float;
 
+pub use linalg::SymmetricMatrix;
+
 pub mod activations;
+pub mod boltzmann;
 pub mod feedforward;
 pub mod training;
 pub mod util;
+
+mod linalg;
 
 /// A trait representing anything that can process an input to generate an output.
 ///

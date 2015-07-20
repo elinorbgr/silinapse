@@ -5,6 +5,7 @@ authors = ["Victor Berger <victor.berger@m4x.org>"]
 
 [dependencies]
 num = "0.1"
+rand = "0.3"
 
 [features]
 unstable = []
