@@ -9,6 +9,20 @@ use activations::ActivationFunction;
 use training::{PerceptronRule, GradientDescent};
 
 /// A feedforward layer
+///
+/// Such layer is composed of a set of output neurons, and have all its
+/// inputs connected to all its outputs.
+///
+/// The effective computation is thus, if `X` is the vector of inputs,
+/// `Y` the vector of outputs, `W` the internal weigths matrix, `B` the vector
+/// of biases and `f()` the activation function (applied on all components of
+/// the vector in parallel):
+///
+/// ```text
+/// Y = f( W*X + B )
+/// ```
+///
+/// The training of this layer consists on fitting the values of `W` and `B`.
 pub struct FeedforwardLayer<F: Float, V: Fn(F) -> F, D: Fn(F) -> F> {
     inputs: usize,
     coeffs: Vec<F>,
