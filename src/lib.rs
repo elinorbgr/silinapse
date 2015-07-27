@@ -10,11 +10,20 @@
 #![warn(missing_docs)]
 
 extern crate num;
+extern crate rand;
 
 use num::Float;
 
+pub use linalg::SymmetricMatrix;
+
+pub use boltzmann::BoltzmannMachine;
+pub use feedforward::FeedforwardLayer;
+
+mod boltzmann;
+mod feedforward;
+mod linalg;
+
 pub mod activations;
-pub mod feedforward;
 pub mod training;
 pub mod util;
 
