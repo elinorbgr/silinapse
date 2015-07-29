@@ -51,8 +51,8 @@ pub fn sigmoid<F: Float>() -> ActivationFunction<F, fn(F) -> F, fn(F) -> F> {
     ActivationFunction::new(sigmoid_val, sigmoid_der)
 }
 
-fn sigmoid_val<F: Float>(x: F) -> F { one::<F>() / ( one::<F>() + x.exp() ) }
-fn sigmoid_der<F: Float>(x: F) -> F { -x.exp() / ( one::<F>() + x.exp() ).powi(2) }
+fn sigmoid_val<F: Float>(x: F) -> F { one::<F>() / ( one::<F>() + (-x).exp() ) }
+fn sigmoid_der<F: Float>(x: F) -> F { x.exp() / ( one::<F>() + x.exp() ).powi(2) }
 
 /// Step function. Cannot be used for learning, but can be used
 /// to normalize data.

@@ -2,7 +2,7 @@
 
 use std::cmp::min;
 
-use num::{Float, one, zero};
+use num::{Float, zero};
 
 use {Compute, BackpropTrain, SupervisedTrain};
 use activations::ActivationFunction;
@@ -36,7 +36,7 @@ impl<F, V, D> FeedforwardLayer<F, V, D>
           D: Fn(F) -> F
 {
     /// Creates a new linear feedforward layer with all its weights set
-    /// to 1 and its biases set to 0
+    /// to 0 and its biases set to 0
     pub fn new(inputs: usize,
                outputs: usize,
                activation: ActivationFunction<F, V, D>)
@@ -44,7 +44,7 @@ impl<F, V, D> FeedforwardLayer<F, V, D>
     {
         FeedforwardLayer {
             inputs: inputs,
-            coeffs: vec![one(); inputs*outputs],
+            coeffs: vec![zero(); inputs*outputs],
             biases: vec![zero(); outputs],
             activation: activation
         }
@@ -109,11 +109,12 @@ impl<F, V, D> SupervisedTrain<F, PerceptronRule<F>> for FeedforwardLayer<F, V, D
     {
         let out = self.compute(input);
         for j in 0..self.biases.len() {
-            let diff = target.get(j).map(|v| *v).unwrap_or(zero()) - out[j];
+            let diff = out[j] - target.get(j).map(|v| *v).unwrap_or(zero());
             for i in 0..min(self.inputs, input.len()) {
                 self.coeffs[i + j*self.inputs] =
-                    self.coeffs[i + j*self.inputs] + rule.rate * diff * input[i];
+                    self.coeffs[i + j*self.inputs] - rule.rate * diff * input[i];
             }
+            self.biases[j] = self.biases[j] - rule.rate * diff;
         }
     }
 }
@@ -155,6 +156,9 @@ impl<F, V, D> BackpropTrain<F, GradientDescent<F>> for FeedforwardLayer<F, V, D>
                                 * ( out[j] - target.get(j).map(|x| *x).unwrap_or(zero()) )
 
             }
+            self.biases[j] = self.biases[j]
+                    - rule.rate * deltas[j]
+                                * ( out[j] - target.get(j).map(|x| *x).unwrap_or(zero()) );
         }
         returned
     }
@@ -176,8 +180,12 @@ impl<F, V, D> SupervisedTrain<F, GradientDescent<F>> for FeedforwardLayer<F, V, 
 
 #[cfg(test)]
 mod tests {
-    use Compute;
-    use activations::identity;
+
+    use {Compute, SupervisedTrain};
+    use activations::{identity, step, sigmoid};
+    use training::{PerceptronRule, GradientDescent};
+    use util::Chain;
+
     use super::FeedforwardLayer;
 
     #[test]
@@ -195,5 +203,55 @@ mod tests {
         for o in &output {
             assert!((o - 2.5).abs() < 0.00001);
         }
+    }
+
+    #[test]
+    fn perceptron_rule() {
+        let mut layer = FeedforwardLayer::new(4, 2, step());
+        let rule = PerceptronRule { rate: 0.5f32 };
+        for _ in 0..3 {
+            layer.supervised_train(&rule, &[1.0,1.0,1.0,1.0], &[0.0, 0.0]);
+            layer.supervised_train(&rule, &[1.0,-1.0,1.0,-1.0], &[1.0, 1.0]);
+        }
+        assert_eq!(layer.compute(&[1.0, 1.0, 1.0, 1.0]), [0.0f32, 0.0]);
+        assert_eq!(layer.compute(&[1.0, -1.0, 1.0, -1.0]), [1.0f32, 1.0]);
+    }
+
+    #[test]
+    fn supervised_train() {
+        // a deterministic pseudo-random initialization.
+        // uniform init is actually terrible for neural networks.
+        let random = {
+            let mut acc = 0;
+            move || { acc += 1; (1.0f32 + ((13*acc) % 12) as f32) / 13.0f32}
+        };
+        let mut layer = FeedforwardLayer::new_from(4, 2, sigmoid(), random);
+        let rule = GradientDescent { rate: 0.5f32 };
+        for _ in 0..40 {
+            layer.supervised_train(&rule, &[1.0,1.0,1.0,1.0], &[0.0, 0.0]);
+            layer.supervised_train(&rule, &[1.0,-1.0,1.0,-1.0], &[1.0, 1.0]);
+        }
+        assert!({ let out = layer.compute(&[1.0, 1.0, 1.0, 1.0]); out[0] < 0.2 && out[1] < 0.2 });
+        assert!({ let out = layer.compute(&[1.0, -1.0, 1.0, -1.0]); out[0] > 0.8 && out[1] > 0.8 });
+    }
+
+    #[test]
+    fn backprop_train() {
+        // a deterministic pseudo-random initialization.
+        // uniform init is actually terrible for neural networks.
+        let mut random = {
+            let mut acc = 0;
+            move || { acc += 1; (1.0f32 + ((13*acc) % 12) as f32) / 13.0f32}
+        };
+        let mut layer = Chain::new(FeedforwardLayer::new_from(4, 8, sigmoid(), &mut random), FeedforwardLayer::new_from(8, 2, sigmoid(), &mut random));
+        let rule = GradientDescent { rate: 0.5f32 };
+        for _ in 0..200 {
+            layer.supervised_train(&rule, &[1.0, 1.0,1.0, 1.0], &[1.0, 0.0]);
+            layer.supervised_train(&rule, &[1.0,-1.0,1.0,-1.0], &[0.0, 1.0]);
+        }
+        println!("{:?}", layer.compute(&[1.0, 1.0, 1.0, 1.0]));
+        assert!({ let out = layer.compute(&[1.0, 1.0, 1.0, 1.0]); out[0] > 0.8 && out[1] < 0.2 });
+        println!("{:?}", layer.compute(&[1.0, -1.0, 1.0, -1.0]));
+        assert!({ let out = layer.compute(&[1.0, -1.0, 1.0, -1.0]); out[0] < 0.2 && out[1] > 0.8 });
     }
 }
