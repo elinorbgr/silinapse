@@ -1,6 +1,6 @@
 # Silinapse
 
-[![Build Status](https://travis-ci.org/vberger/silinapse.svg?branch=master)](https://travis-ci.org/vberger/silinapse) [![Build Status](https://travis-ci.org/vberger/silinapse.svg?branch=master)](https://travis-ci.org/vberger/silinapse)
+[![Build Status](https://travis-ci.org/vberger/silinapse.svg?branch=master)](https://travis-ci.org/vberger/silinapse) [![Coverage Status](https://coveralls.io/repos/vberger/silinapse/badge.svg?branch=master&service=github)](https://coveralls.io/github/vberger/silinapse?branch=master)
 
 The silicon synapse.
 
