@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["BoltzmannMachine","A stochastic self-organizing network."]]});

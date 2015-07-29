@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["GradientDescent","The gradient descend approach, consisting on finding a minimum of the error by going down its gradient."],["PerceptronRule","The perceptron rule, a classic learning rule for one-layered feedforward networks."]]});

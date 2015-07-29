@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["FeedforwardLayer","A feedforward layer"]]});

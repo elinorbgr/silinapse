@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Chain","An adapter tha chains two networks, linking the first's ouput to the second's input."],["FixedOutput","A network that returns a fixed output, whatever the input is."],["Identity","A network that simply returns its input"],["Parallel","An adapter that feeds the same input to two networks, and concatenate their outputs into its output."]]});
