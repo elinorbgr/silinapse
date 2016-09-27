@@ -14,7 +14,7 @@ use {Method, UnsupervisedTrain, SupervisedTrain, BackpropTrain};
 
 /// An adapter tha chains two networks, linking the first's ouput to
 /// the second's input.
-pub struct Chain<F, A, B> where A: Compute<F>, B: Compute<F> {
+pub struct Chain<F, A, B> where A: Compute<F>, B: Compute<F>, F: Float {
     _marker: PhantomData<F>,
     first: A,
     second: B
